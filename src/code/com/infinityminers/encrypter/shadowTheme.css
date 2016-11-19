@@ -1,0 +1,103 @@
+/*First of all, the very top menu bar.*/
+.menu-bar {
+	-fx-background-color: linear-gradient(#363636 25%, #252525 85%, #202020 100%);
+}
+/*Now we will guve each of the menu bar's buttons a background-radius.*/
+.menu-bar .menu-button {
+	-fx-background-radius: 1px;
+}
+.menu-bar .menu-item:focused {
+ -fx-background-color: #616161;
+}
+/*The labels are basically the same as the menu-buttons.*/
+.menu-bar .label {
+	-fx-text-fill: #C00;
+	-fx-font-size: 15px;
+	-fx-font-weight: bold;
+}
+.menu-bar .label:focused {
+-fx-background-color: #616161;
+}
+.context-menu {
+	-fx-background-color: black;
+}
+.background {
+	-fx-border-color: #0F0000;
+	-fx-background-color: linear-gradient(#000 0%, #303030 2%, #353535 86%, #1F1F1F 100%);
+}
+.table-view {
+	-fx-background-color: linear-gradient(#353535 0%, #414141 98%, #1B1B1B 100%);
+	-fx-border-color: linear-gradient(#000000 0%, #060606 5%, #F00 50%, #060606 70%, #000000 100%);
+	-fx-border-width: 3px;
+}
+.table-column {
+	-fx-text-fill: white;
+	-fx-font-weight: bold;
+	-fx-font-size: 20px;
+	-fx-background-color: linear-gradient(#000051 0%, #B6B6B6 0.2%, #0A0A0A 1%, #010101 100%);
+	-fx-border-color: #000;
+	-fx-border-width: 1px;
+}
+.table-column .label {
+	-fx-text-fill: white;
+}
+.textArea {
+	-fx-background-color: black;
+	-fx-border-width: 3px;
+	-fx-border-color: black;
+	-fx-border-radius: 3px;
+	-fx-color: gray;
+	-fx-text-fill: white;
+	-fx-font-size: 15px;
+	-fx-font-weight: bold;
+}
+.textArea .content {
+	-fx-border-color: black;
+	-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #0C0C0C 0%, #131313 15%, #2A2A2A 100%);
+}
+.textField {
+	-fx-background-color: linear-gradient(from 50% 0% to 50% 100%, #060606 0%, #121212 15%, #1D1D1D 85%, #121212 100%), linear-gradient(#060606 0%, #121212 15%, #1D1D1D 85%, #121212 100%);
+	-fx-text-fill: white;
+	-fx-font-size: 15px;
+	-fx-font-weight: bold;
+}
+#ContainerBox {
+	-fx-background-color: black;
+	-fx-color: black;
+}
+.shaded-items {
+	-fx-text-fill: black;
+	-fx-font-weight: bold;
+	-fx-font-size: 17px;
+}
+.shaded-buttons {
+	-fx-border-color: black;
+	-fx-background-color: transparent;
+	-fx-border-width: 3px;
+	-fx-border-radius: 3px;
+}
+.shaded-buttons:hover {
+	-fx-background-color: #787878;
+	-fx-border-color: white;
+}
+.shaded-buttons:active {
+	-fx-border-color: #FFF;
+	-fx-background-color: #606060;
+}
+/*Close button*/
+#close-button {
+	-fx-background-color: transparent;
+	-fx-border-color: transparent;
+	-fx-font-weight: bold;
+	-fx-text-fill: black;
+	-fx-font-size: 22px;
+}
+#close-button:hover {
+	-fx-background-color: #919191;
+	-fx-text-fill: white;
+}
+.tooltip {
+	-fx-font-size: 12px;
+	-fx-font-weight: bold;
+	-fx-text-fill: white;
+}
