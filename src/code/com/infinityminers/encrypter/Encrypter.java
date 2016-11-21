@@ -5,11 +5,14 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 
 import com.infinityminers.encrypter.guis.Stages;
 
+import frames.AddKeyMenuController;
+import frames.KeyManagerMenuController;
+import frames.LoaderClass;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -21,6 +24,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -36,37 +40,11 @@ public class Encrypter extends Application {
 	public static String NAME = "Encrypter";
 	public static Stage stage;
 
-	public static abstract class Tools {
-		public static String decrypt(String input) {
-			LinkedList<Character> chars = new LinkedList<Character>();
-			String returnText = "";
-			for (int i = 0; i < input.length(); i++) {
-				char c0 = input.charAt(i);
-				c0 = (char) (c0 - '\101');
-				chars.add(i, Character.valueOf(c0));
-			}
-			for (int i = 0; i <= chars.size() - 1; i++) {
-				returnText = returnText.concat(chars.get(i).toString());
-			}
-			return returnText;
-		}
-
-		public static String encrypt(String input) {
-			LinkedList<Character> chars = new LinkedList<Character>();
-			String returnText = "";
-			for (int i = 0; i < input.length(); i++) {
-				char c0 = input.charAt(i);
-				c0 = (char) (c0 + '\101');
-				chars.add(i, Character.valueOf(c0));
-			}
-			for (int i = 0; i <= chars.size() - 1; i++) {
-				returnText = returnText.concat(chars.get(i).toString());
-			}
-			return returnText;
-		}
-	}
-
 	private static boolean allowCopy = true;
+
+	public static final File DIRECTORY = new File("C:/Encryption/");
+
+	public static final File KEY_DIRECTORY = new File(DIRECTORY, "keys/");
 
 	public static void main(String[] args) {
 		Application.launch(Encrypter.class, args);
@@ -82,14 +60,16 @@ public class Encrypter extends Application {
 	private TextArea outputBox;
 	@FXML
 	private Tooltip encryptButtonTip;
+
 	@FXML
 	private Button closeButton;
+
 	@FXML
 	private Label errorLabel;
 
 	@FXML
 	private void addKey() {
-
+		Stages.addKeyMenuStage.show();
 	}
 
 	@FXML
@@ -97,20 +77,22 @@ public class Encrypter extends Application {
 
 	}
 
-	@FXML
-	private void listKeys() {
-		Stages.keyManagerMenuStage.show();
+	@Override
+	public void init() throws Exception {
+		if (!DIRECTORY.exists())
+			DIRECTORY.mkdirs();
+		if (!KEY_DIRECTORY.exists())
+			KEY_DIRECTORY.mkdirs();
+		super.init();
 	}
 
 	@FXML
-	private void onExit() {
+	private void listKeys() {
 		try {
-			this.stop();
+			Stages.keyManagerMenuStage.show();
 		} catch (Exception e) {
-			System.out.println("COULD NOT SUCCESFULLY CLOSE PROGRAM!");
 			e.printStackTrace();
 		}
-		System.exit(0);
 	}
 
 	@FXML
@@ -132,11 +114,11 @@ public class Encrypter extends Application {
 		if (decryptRadioButton.isSelected()) {
 			encryptButton.setText("Decrypt");
 			encryptButtonTip.setText("Click here to decrypt text.");
-			encryptButton.setPrefWidth(85);
+			encryptButton.setPrefWidth(95);
 		} else {
 			encryptButton.setText("Encrypt");
 			encryptButtonTip.setText("Click here to encrypt text.");
-			encryptButton.setPrefWidth(80);
+			encryptButton.setPrefWidth(107);
 		}
 	}
 
@@ -158,6 +140,17 @@ public class Encrypter extends Application {
 			} else
 				setOutputText(Tools.decrypt(cryptoBox.getText()));
 		}
+	}
+
+	@FXML
+	private void onExit() {
+		try {
+			this.stop();
+		} catch (Exception e) {
+			System.out.println("COULD NOT SUCCESFULLY CLOSE PROGRAM!");
+			e.printStackTrace();
+		}
+		System.exit(0);
 	}
 
 	@FXML
@@ -192,19 +185,38 @@ public class Encrypter extends Application {
 	@Override
 	public void start(Stage primaryStage) throws IOException {
 		stage = primaryStage;
-		BorderPane main = (BorderPane) FXMLLoader.load(Encrypter.class.getResource("EncrypterFrame.fxml"));
+
+		BorderPane main = (BorderPane) FXMLLoader.load(LoaderClass.class.getResource("EncrypterFrame.fxml"));
 		Scene scene = new Scene(main);
 		stage.initStyle(StageStyle.UNDECORATED);
+		stage.getIcons().add(new Image(images.LoaderClass.class.getResourceAsStream("ProgramIcon.png")));
 		stage.setScene(scene);
 		stage.setTitle(NAME + " V" + VERSION);
 		stage.show();
+
 		stage.addEventHandler(WindowEvent.WINDOW_SHOWING, new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent window) {
 				encryptButton.setMaxWidth(85);
+				KeyManagerMenuController.bootKeyTable();
+				AddKeyMenuController.bootUp();
 			}
 		});
-		Stages.bootUp();
+		bootUp(primaryStage);
+
+	}
+
+	public static boolean isFirstRun = false;
+
+	public static void bootUp(Stage primaryStage) throws IOException {
+		if (DIRECTORY.mkdirs()) {
+			System.out.println("Created the Encryption directory.");
+			isFirstRun = true;
+		}
+		if (KEY_DIRECTORY.mkdir())
+			System.out.println("Created the Encryption Keys directory.");
+
+		Stages.bootUp(primaryStage);
 
 	}
 
