@@ -5,23 +5,51 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 
+import com.infinityminers.encrypter.guis.Stages;
+
+import frames.AddKeyMenuController;
+import frames.KeyManagerMenuController;
+import frames.LoaderClass;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+/**
+ * @author Zeale
+ *
+ */
 public class Encrypter extends Application {
+
+	public static String VERSION = "1.2.3";
+	public static String NAME = "Encrypter";
+	public static Stage stage;
+
+	private static boolean allowCopy = true;
+
+	public static final File DIRECTORY = new File("C:/Encryption/");
+
+	public static final File KEY_DIRECTORY = new File(DIRECTORY, "keys/");
+
+	public static void main(String[] args) {
+		Application.launch(Encrypter.class, args);
+	}
+
 	@FXML
 	private Button encryptButton;
 	@FXML
@@ -30,39 +58,99 @@ public class Encrypter extends Application {
 	private TextField cryptoBox;
 	@FXML
 	private TextArea outputBox;
-
-	// =========================================================================================================================
-	// DECLARE FXML EVENT METHODS
-	// =========================================================================================================================
 	@FXML
-	private void onEncryptButtonClicked() {
+	private Tooltip encryptButtonTip;
 
-		if (!decryptRadioButton.isSelected()) {
-			// First we handle encryption.
-			if (cryptoBox.getText().isEmpty())
-				outputBox.setText("You didn't give me anything to encrypt.");
-			else
-				outputBox.setText(Tools.encrypt(cryptoBox.getText()));
-		}
+	@FXML
+	private Button closeButton;
 
-		// Then we handle decryption
-		else {
-			if (cryptoBox.getText().isEmpty())
-				outputBox.setText("You didn't give me anything to decrypt.");
-			else
-				outputBox.setText(Tools.decrypt(cryptoBox.getText()));
+	@FXML
+	private Label errorLabel;
+
+	@FXML
+	private void addKey() {
+		Stages.addKeyMenuStage.show();
+	}
+
+	@FXML
+	private void equipKey() {
+
+	}
+
+	@Override
+	public void init() throws Exception {
+		if (!DIRECTORY.exists())
+			DIRECTORY.mkdirs();
+		if (!KEY_DIRECTORY.exists())
+			KEY_DIRECTORY.mkdirs();
+		super.init();
+	}
+
+	@FXML
+	private void listKeys() {
+		try {
+			Stages.keyManagerMenuStage.show();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+	}
+
+	@FXML
+	private void onCopy() {
+		if (outputBox.getText().isEmpty() && cryptoBox.getText().isEmpty()
+				|| !allowCopy && cryptoBox.getText().isEmpty())
+			setOutputError("You must encrypt/decrypt something to copy!");
+		else if (outputBox.getText().isEmpty() || !allowCopy) {
+			setOutputError("You must encrypt/decrypt something to copy! Copying the input instead...");
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(cryptoBox.getText()),
+					null);
+		} else
+			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(outputBox.getText()),
+					null);
 	}
 
 	@FXML
 	private void onDecryptRadioButtonClicked() {
 		if (decryptRadioButton.isSelected()) {
 			encryptButton.setText("Decrypt");
-			encryptButton.setPrefWidth(75);
+			encryptButtonTip.setText("Click here to decrypt text.");
+			encryptButton.setPrefWidth(95);
 		} else {
 			encryptButton.setText("Encrypt");
-			encryptButton.setPrefWidth(70);
+			encryptButtonTip.setText("Click here to encrypt text.");
+			encryptButton.setPrefWidth(107);
 		}
+	}
+
+	@FXML
+	private void onEncryptButtonClicked() {
+
+		if (!decryptRadioButton.isSelected()) {
+			// First we handle encryption.
+			if (cryptoBox.getText().isEmpty())
+				setOutputError("You didn't give me anything to encrypt.");
+			else
+				setOutputText(Tools.encrypt(cryptoBox.getText()));
+		}
+
+		// Then we handle decryption
+		else {
+			if (cryptoBox.getText().isEmpty()) {
+				setOutputError("You didn't give me anything to decrypt.");
+			} else
+				setOutputText(Tools.decrypt(cryptoBox.getText()));
+		}
+	}
+
+	@FXML
+	private void onExit() {
+		try {
+			this.stop();
+		} catch (Exception e) {
+			System.out.println("COULD NOT SUCCESFULLY CLOSE PROGRAM!");
+			e.printStackTrace();
+		}
+		System.exit(0);
 	}
 
 	@FXML
@@ -70,108 +158,66 @@ public class Encrypter extends Application {
 		try {
 			cryptoBox.setText(cryptoBox.getText()
 					+ (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor));
-		} catch (HeadlessException | UnsupportedFlavorException | IOException e) {
+		} catch (HeadlessException e) {
+			e.printStackTrace();
+		} catch (UnsupportedFlavorException e) {
+			setOutputError("The data stored on your clipboard was unpastable.");
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@FXML
-	private void onCopy() {
-		if (outputBox.getText().isEmpty() && cryptoBox.getText().isEmpty()
-				|| outputBox.getText().equals("You must encrypt/decrypt something to copy!")
-						&& cryptoBox.getText().isEmpty()
-				|| outputBox.getText()
-						.equals("You must encrypt/decrypt something to copy! Copying the input instead...")
-						&& cryptoBox.getText().isEmpty())
-			outputBox.setText("You must encrypt/decrypt something to copy!");
-		else if (outputBox.getText().isEmpty()
-				|| outputBox.getText().equals("You must encrypt/decrypt something to copy!") || outputBox.getText()
-						.equals("You must encrypt/decrypt something to copy! Copying the input instead...")) {
+	private void removeKey() {
 
-			outputBox.setText("You must encrypt/decrypt something to copy! Copying the input instead...");
-			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(cryptoBox.getText()),
-					null);
-
-		} else
-			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(outputBox.getText()),
-					null);
 	}
 
-	@FXML
-	private void onClose() {
-		System.exit(0);
+	public void setOutputError(String error) {
+		outputBox.setText(error);
+		allowCopy = false;
 	}
 
-	// =========================================================================================================================
-	// OVERRIDDEN METHODS
-	// =========================================================================================================================
+	public void setOutputText(String text) {
+		outputBox.setText(text);
+		allowCopy = true;
+	}
 
 	@Override
 	public void start(Stage primaryStage) throws IOException {
-		BorderPane main = (BorderPane) FXMLLoader.load(Encrypter.class.getResource("EncrypterFrame.fxml"));
-		Scene scene = new Scene(main);
-		primaryStage.setScene(scene);
-		primaryStage.setTitle(Information.NAME + " V" + Information.VERSION);
-		primaryStage.show();
+		stage = primaryStage;
 
-		primaryStage.addEventHandler(WindowEvent.WINDOW_SHOWING, new EventHandler<WindowEvent>() {
+		BorderPane main = (BorderPane) FXMLLoader.load(LoaderClass.class.getResource("EncrypterFrame.fxml"));
+		Scene scene = new Scene(main);
+		stage.initStyle(StageStyle.UNDECORATED);
+		stage.getIcons().add(new Image(images.LoaderClass.class.getResourceAsStream("ProgramIcon.png")));
+		stage.setScene(scene);
+		stage.setTitle(NAME + " V" + VERSION);
+		stage.show();
+
+		stage.addEventHandler(WindowEvent.WINDOW_SHOWING, new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent window) {
 				encryptButton.setMaxWidth(85);
+				KeyManagerMenuController.bootKeyTable();
+				AddKeyMenuController.bootUp();
 			}
 		});
+		bootUp(primaryStage);
 
 	}
 
-	// =========================================================================================================================
-	// DECLARE MAIN METHOD
-	// =========================================================================================================================
+	public static boolean isFirstRun = false;
 
-	public static void main(String[] args) {
-		Application.launch(Encrypter.class, args);
-	}
-
-	// =========================================================================================================================
-	// DECLARE OTHER CLASSES
-	// =========================================================================================================================
-
-	/**
-	 * @author Zeale
-	 *
-	 */
-	public static abstract class Information {
-		public static String VERSION = "1.0";
-		public static String NAME = "Encrypter";
-	}
-
-	public static abstract class Tools {
-		public static String encrypt(String input) {
-			LinkedList<Character> chars = new LinkedList<Character>();
-			String returnText = "";
-			for (int i = 0; i < input.length(); i++) {
-				char c0 = input.charAt(i);
-				c0 = (char) (c0 + '\101');
-				chars.add(i, Character.valueOf(c0));
-			}
-			for (int i = 0; i <= chars.size() - 1; i++) {
-				returnText = returnText.concat(((Character) chars.get(i)).toString());
-			}
-			return returnText;
+	public static void bootUp(Stage primaryStage) throws IOException {
+		if (DIRECTORY.mkdirs()) {
+			System.out.println("Created the Encryption directory.");
+			isFirstRun = true;
 		}
+		if (KEY_DIRECTORY.mkdir())
+			System.out.println("Created the Encryption Keys directory.");
 
-		public static String decrypt(String input) {
-			LinkedList<Character> chars = new LinkedList<Character>();
-			String returnText = "";
-			for (int i = 0; i < input.length(); i++) {
-				char c0 = input.charAt(i);
-				c0 = (char) (c0 - '\101');
-				chars.add(i, Character.valueOf(c0));
-			}
-			for (int i = 0; i <= chars.size() - 1; i++) {
-				returnText = returnText.concat(((Character) chars.get(i)).toString());
-			}
-			return returnText;
-		}
+		Stages.bootUp(primaryStage);
+
 	}
+
 }
